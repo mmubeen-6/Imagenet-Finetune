@@ -1,0 +1,15 @@
+TRAIN_DATA_PATH: "/home/mubeen/workspace/crops/produce/session_1_shopping_gestures" # Train Data Path
+VAL_DATA_PATH: "/home/mubeen/workspace/crops/produce/session_2_shopping_gestures" # Test Data Path
+TEST_DATA_PATH: "/home/mubeen/workspace/crops/produce/session_2_shopping_gestures" # Val Data Path
+
+MODEL_SAVE_PATH: "models/test" # Relative path to save models
+
+TRAIN_EPOCHS: 5 # Total epochs to train the model
+MULTI_GPU: True # Whether to use multi gpu if available
+LEARNING_RATE: 0.01 # Initial learning rate
+WEIGHT_DECAY: 0.0001 # L2 Reg
+STEP_SIZE: [12, 16] # Epochs to decrease LR
+TRAIN_BATCH_SIZE: 8 # Train batch size
+TEST_BATCH_SIZE: 8 # Test/Val batch size
+TRAIN_WORKERS: 1 # Train number of workers
+TEST_WORKERS: 1 # Test/Val number of workers
