@@ -12,32 +12,9 @@ from torch.utils.tensorboard import SummaryWriter
 
 from dataset import ImageDataset
 from model import get_model
+from utils import calc_time_left, load_config_file
 
 torch.backends.cudnn.benchmark = True
-
-def calc_time_left(batch_index, total_batches, time_consumed):
-    """
-    Calculates remaining epoch time based on already epoch consumed time
-    :param batch_index: total train batches forwarded
-    :param total_batches: total train batches in training
-    :param time_consumed: total time consumed yet in epoch
-    :return: time remaining in training.
-    """
-    average_time_consumed = time_consumed / batch_index
-    time_left = average_time_consumed * (total_batches - batch_index)
-
-    return "{}m {}s".format(int(time_left // 60), int(time_left % 60))
-
-def load_config_file(config_file_path):
-    """
-    Loads the config file for input parameter loading
-    :param config_file_path: path of config yaml file
-    :return: configs for training/testing
-    """
-    with open(config_file) as file:
-        config = yaml.load(file, Loader=yaml.FullLoader)
-    
-    return config
 
 def load_dataset(config):
     """
@@ -50,7 +27,7 @@ def load_dataset(config):
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                         std=[0.229, 0.224, 0.225])
     data_transforms = {
-        'train':
+        "train":
         transforms.Compose([
             transforms.Resize(256),  # smaller side resized
             transforms.RandomHorizontalFlip(),
@@ -59,7 +36,7 @@ def load_dataset(config):
             transforms.ToTensor(),
             normalize
         ]),
-        'validation':
+        "validation":
         transforms.Compose([
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
@@ -103,9 +80,9 @@ def validate(model, test_loader, epoch_num, criterion, writer):
             test_loss += loss.item()
             pred = output.data.max(1, keepdim=True)[1]
             correct += pred.eq(target.data.view_as(pred)).cpu().sum()
-            writer.add_scalar('Loss/Val', loss, (idx + ((epoch_num-1) * len(test_loader))))
+            writer.add_scalar("Loss/Val", loss, (idx + ((epoch_num-1) * len(test_loader))))
             print("Validation Progress |{}{}|  {:3.1f} % complete  \r".format(
-                int(60*(idx/len(test_loader)))*"#", int(60*(1-idx/len(test_loader)))*"-", 100*idx/len(test_loader)), end='')
+                int(60*(idx/len(test_loader)))*"#", int(60*(1-idx/len(test_loader)))*"-", 100*idx/len(test_loader)), end="")
 
         test_loss /= len(test_loader)
         accuracy = 100 * float(correct) / len(test_loader.dataset)
@@ -113,7 +90,7 @@ def validate(model, test_loader, epoch_num, criterion, writer):
     print("Val Summary: Loss: {:.2f}, Accuracy: {:.2f}% \033[K".format(test_loss, accuracy))
     
     # Logging paramters into tensorboard
-    writer.add_scalar('Accuracy/Validation', accuracy, epoch_num)
+    writer.add_scalar("Accuracy/Validation", accuracy, epoch_num)
     return accuracy, test_loss
 
 def train(config):
@@ -152,8 +129,8 @@ def train(config):
     #### Training ####
     for epoch in range(1, config["TRAIN_EPOCHS"] + 1):
         epoch_start_time = time.time()
-        print('Epoch {}/{}'.format(epoch, config["TRAIN_EPOCHS"]))
-        print('-' * 50)
+        print("Epoch {}/{}".format(epoch, config["TRAIN_EPOCHS"]))
+        print("-" * 50)
 
         model.train()
         with torch.set_grad_enabled(True):
@@ -167,9 +144,9 @@ def train(config):
                 optimizer.step()
 
                 # Logging paramters into tensorboard
-                writer.add_scalar('Loss/training', loss, (batch_idx + ((epoch-1) * len(train_loader))))
+                writer.add_scalar("Loss/training", loss, (batch_idx + ((epoch-1) * len(train_loader))))
                 print("Train Progress |{}{}|   {:3.1f} % complete [Loss: {:4.2f}] [ValLoss: {:4.2f}] [PrevValAccuracy: {:4.2f}] [BestValAccuracy: {:4.2f}] [Time Left: {}]\033[K\r".format(
-                    int(50*(batch_idx/len(train_loader)))*"#", int(50*(1-batch_idx/len(train_loader)))*"-", 100*batch_idx/len(train_loader), loss, float(test_loss), float(latest_accuracy), float(best_accuracy), calc_time_left(batch_idx + 1, len(train_loader), (time.time() - epoch_start_time))), end='')
+                    int(50*(batch_idx/len(train_loader)))*"#", int(50*(1-batch_idx/len(train_loader)))*"-", 100*batch_idx/len(train_loader), loss, float(test_loss), float(latest_accuracy), float(best_accuracy), calc_time_left(batch_idx + 1, len(train_loader), (time.time() - epoch_start_time))), end="")
 
         elapsed_time = (time.time() - epoch_start_time) / 60
         print("Train Summary: [Loss: {:4.2f}] [ValLoss: {:4.2f}] [BestValAccuracy: {:4.2f}%]  [Epoch Time:{:.2f} min]\033[K".format(
@@ -180,29 +157,29 @@ def train(config):
         if latest_accuracy >= best_accuracy:
             print("Saving Model")
             best_accuracy = latest_accuracy
-            torch.save({'epoch': epoch,
-                        'model_state_dict': model.module.state_dict() if multi_gpu else model.state_dict(),
-                        'optimizer_state_dict': optimizer.state_dict(),
-                        'schedular_state_dict': step_lr_scheduler.state_dict(),
-                        'accuracy': latest_accuracy,
-                        'loss': test_loss
-                        }, os.path.join(config["MODEL_SAVE_PATH"], str(epoch) + '.pth'))
+            torch.save({"epoch": epoch,
+                        "model_state_dict": model.module.state_dict() if multi_gpu else model.state_dict(),
+                        "optimizer_state_dict": optimizer.state_dict(),
+                        "schedular_state_dict": step_lr_scheduler.state_dict(),
+                        "accuracy": latest_accuracy,
+                        "loss": test_loss
+                        }, os.path.join(config["MODEL_SAVE_PATH"], str(epoch) + ".pth"))
         
-        torch.save({'epoch': epoch,
-                    'model_state_dict': model.module.state_dict() if multi_gpu else model.state_dict(),
-                    'optimizer_state_dict': optimizer.state_dict(),
-                    'schedular_state_dict': step_lr_scheduler.state_dict(),
-                    'accuracy': latest_accuracy,
-                    'loss': test_loss
-                    }, os.path.join(config["MODEL_SAVE_PATH"], 'latest.pth'))
+        torch.save({"epoch": epoch,
+                    "model_state_dict": model.module.state_dict() if multi_gpu else model.state_dict(),
+                    "optimizer_state_dict": optimizer.state_dict(),
+                    "schedular_state_dict": step_lr_scheduler.state_dict(),
+                    "accuracy": latest_accuracy,
+                    "loss": test_loss
+                    }, os.path.join(config["MODEL_SAVE_PATH"], "latest.pth"))
                     
         
         step_lr_scheduler.step()
         print("\n")
 
     writer.close()
-    torch.save(model.module.state_dict() if multi_gpu else model.state_dict(), os.path.join(config["MODEL_SAVE_PATH"], 'final.weights'))
-    print('Trained model path: ', config["MODEL_SAVE_PATH"])
+    torch.save(model.module.state_dict() if multi_gpu else model.state_dict(), os.path.join(config["MODEL_SAVE_PATH"], "final.weights"))
+    print("Trained model path: ", config["MODEL_SAVE_PATH"])
 
 if __name__ == "__main__":
     config_file = "./default-config,yaml"

@@ -22,16 +22,19 @@ class ImageDataset(Dataset):
         if not testing:
             self.class_labels = os.listdir(self.root_dir)
             self.class_labels.sort()
-            self.num_classes = len(self.class_labels)
-
+            
             with open(class_labels_file, "w") as file_:
                 for class_label in self.class_labels:
                     file_.write("{}\n".format(class_label))
         else:
+            if not os.path.isfile(class_labels_file):
+                print("Labels file does not exist, exiting")
+                import sys; sys.exit()
             with open(class_labels_file) as file_:
                 content = file_.readlines()
                 self.class_labels = [x.strip() for x in content]
         
+        self.num_classes = len(self.class_labels)
         self.images_path = []
         self.images_labels = []
 
