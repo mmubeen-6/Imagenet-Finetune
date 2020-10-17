@@ -7,7 +7,7 @@ TEST_DATA_PATH: "/home/mubeen/workspace/crops/produce/session_2_shopping_gesture
 MODEL_SAVE_PATH: "models/test" # Relative path to save models
 
 # Training/testing parameters
-TRAIN_EPOCHS: 5 # Total epochs to train the model
+TRAIN_EPOCHS: 20 # Total epochs to train the model
 MULTI_GPU: True # Whether to use multi gpu if available
 LEARNING_RATE: 0.01 # Initial learning rate
 WEIGHT_DECAY: 0.0001 # L2 Reg

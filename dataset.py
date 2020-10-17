@@ -43,8 +43,8 @@ class ImageDataset(Dataset):
                 self.images_path.append(os.path.join(self.root_dir, class_label, image_name))
                 self.images_labels.append(self.class_labels.index(class_label))
         
-        self.images_path = self.images_path[0:500]
-        self.images_labels = self.images_labels[0:500]
+        self.images_path = self.images_path
+        self.images_labels = self.images_labels
 
         # print(self.images_path)
         # print(self.images_labels)
